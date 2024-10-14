@@ -1,11 +1,18 @@
 import Calendar from "./Calendar";
 import "./App.css";
 import dayjs from "dayjs";
+import { useState } from "react";
 
 function App() {
+  const [value, setValue] = useState(dayjs("2024-11-08"));
   return (
     <div className="App">
-      <Calendar value={dayjs("2024-10-14")} onChange={(date) => {alert(date.format("YYYY-MM-DD"))}}></Calendar>
+      <Calendar
+        value={value}
+        onChange={(val) => {
+          setValue(val);
+        }}
+      ></Calendar>
     </div>
   );
 }

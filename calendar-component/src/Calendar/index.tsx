@@ -1,13 +1,15 @@
-import { Dayjs } from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import MonthCalendar from "./MonthCalendar";
 import Header from "./Header";
 import "./index.scss";
 import { CSSProperties, ReactNode, useState } from "react";
 import cs from "classnames";
 import LocaleContext from "./LocaleContext";
+import { useControllableValue } from "ahooks";
 
 export interface CalendarProps {
-  value: Dayjs;
+  value?: Dayjs;
+  defaultValue?: Dayjs;
   style?: CSSProperties;
   className?: string | string[];
   // 定制日期显示 覆盖日期单元格
@@ -20,24 +22,60 @@ export interface CalendarProps {
 }
 
 function Calendar(props: CalendarProps) {
-  const { value, style, className, locale, onChange } = props;
+  const { style, className, locale, onChange } = props;
 
   const classNames = cs("calendar", className);
 
-  const [curValue, setCurValue] = useState<Dayjs>(value)
+  const [curValue, setCurValue] = useControllableValue<Dayjs>(props, {
+    defaultValue: dayjs(),
+  });
+
+  const [curMonth, setCurMonth] = useState<Dayjs>(curValue);
+
+  function changeDate(date: Dayjs) {
+    setCurValue(date);
+    setCurMonth(date);
+    // useControllableValue 里传入了onChange，所以这里不需要再手动调用onChange
+    // onChange?.(date);
+  }
 
   const selectHandler = (date: Dayjs) => {
-    setCurValue(date)
-    onChange?.(date)
+    changeDate(date);
+  };
+
+  function prevMonthHandler() {
+    setCurMonth(curMonth.subtract(1, "month"));
+  }
+
+  function nextMonthHandler() {
+    setCurMonth(curMonth.add(1, "month"));
+  }
+
+  function todayHandler() {
+    const date = dayjs(Date.now());
+
+    changeDate(date);
   }
 
   return (
-    <LocaleContext.Provider value={{
-      locale: locale || navigator.language
-    }}>
+    <LocaleContext.Provider
+      value={{
+        locale: locale || navigator.language,
+      }}
+    >
       <div className={classNames} style={style}>
-        <Header curMonth={curValue} prevMonthHandler={() => {}} nextMonthHandler={() => {}}/>
-        <MonthCalendar {...props} selectHandler={selectHandler} value={curValue}/>
+        <Header
+          curMonth={curMonth}
+          prevMonthHandler={prevMonthHandler}
+          nextMonthHandler={nextMonthHandler}
+          todayHandler={todayHandler}
+        />
+        <MonthCalendar
+          {...props}
+          selectHandler={selectHandler}
+          value={curValue}
+          curMonth={curMonth}
+        />
       </div>
     </LocaleContext.Provider>
   );
