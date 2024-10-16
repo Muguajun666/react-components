@@ -40,7 +40,7 @@ const Watermark: FC<WatermarkProps> = (props) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const getContainer = useCallback(() => {
-    return props.getContainer ? props.getContainer() : containerRef.current;
+    return props.getContainer ? props.getContainer() : containerRef.current!;
   }, [containerRef.current, props.getContainer]);
 
   const { generateWatermark } = useWatermark({
