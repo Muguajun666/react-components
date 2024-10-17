@@ -36,24 +36,49 @@ export const useStore = (defaultPosition: Position) => {
       return {
         ...preState,
         [position]: messages,
-      }
+      };
     });
 
     return id;
   };
 
   const update = (id: number, messageProps: MessageProps) => {
-    if(!id) return
+    if (!id) return;
 
     setMessageList((preState) => {
       const nextState = { ...preState };
       const { position, index } = findMessage(nextState, id);
-    })
+
+      if (position && index !== -1) {
+        nextState[position][index] = {
+          ...nextState[position][index],
+          ...messageProps,
+        };
+      }
+      return nextState;
+    });
   };
 
-  const remove = (id: number) => {};
+  const remove = (id: number) => {
+    if (!id) return;
 
-  const clearAll = () => {};
+    setMessageList((preState) => {
+      const position = getMessagePosition(preState, id);
+
+      if (!position) {
+        return preState;
+      }
+
+      return {
+        ...preState,
+        [position]: preState[position].filter((item) => item.id !== id),
+      };
+    });
+  };
+
+  const clearAll = () => {
+    setMessageList({ ...initialState });
+  };
 
   return {
     messageList,
@@ -64,7 +89,7 @@ export const useStore = (defaultPosition: Position) => {
   };
 };
 
-let count = 0;
+let count = 1;
 
 export const getId = (messageProps: MessageProps) => {
   if (messageProps.id) {
@@ -82,5 +107,13 @@ export const getMessagePosition = (messageList: MessageList, id: number) => {
 };
 
 export const findMessage = (messageList: MessageList, id: number) => {
-  
-}
+  const position = getMessagePosition(messageList, id);
+  const index = position
+    ? messageList[position].findIndex((item) => item.id === id)
+    : -1;
+
+  return {
+    position,
+    index,
+  };
+};
