@@ -1,8 +1,9 @@
-import { FC, useEffect, useMemo } from "react";
+import { forwardRef, FC, useEffect, useMemo, useImperativeHandle } from "react";
 import { useStore } from "./useStore";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 import "./index.scss";
 import { createPortal } from "react-dom";
+import { useTimer } from "./useTimer";
 
 export type Position = "top" | "bottom";
 
@@ -13,18 +14,58 @@ export interface MessageProps {
   content?: React.ReactNode;
   duration?: number;
   id?: number;
+  onClose?: (...args: any) => void;
 }
 
-export const MessageProvider: FC<{}> = (props) => {
+const MessageItem: FC<MessageProps> = (item) => {
+  const { onMouseEnter, onMouseLeave } = useTimer({
+    id: item.id!,
+    duration: item.duration,
+    remove: item.onClose!,
+  });
+  return (
+    <div
+      className="message-item"
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
+      {item.content}
+    </div>
+  );
+};
+
+export interface MessageRef {
+  add: (messageProps: MessageProps) => number;
+  remove: (id: number) => void;
+  update: (id: number, messageProps: MessageProps) => void;
+  clearAll: () => void;
+}
+
+export const MessageProvider = forwardRef<MessageRef, {}>((props, ref) => {
   const { messageList, add, update, remove, clearAll } = useStore("top");
 
-  useEffect(() => {
-    setInterval(() => {
-      add({
-        content: "hello world",
-      });
-    }, 1000);
-  }, []);
+  // 在调用后才开始的赋值暴露给外部 时机不对
+  // useImperativeHandle(
+  //   ref,
+  //   () => {
+  //     return {
+  //       add,
+  //       remove,
+  //       update,
+  //       clearAll,
+  //     };
+  //   },
+  //   []
+  // );
+
+  if ("current" in ref!) {
+    ref.current = {
+      add,
+      update,
+      remove,
+      clearAll,
+    };
+  }
 
   const positions = Object.keys(messageList) as Position[];
 
@@ -43,7 +84,7 @@ export const MessageProvider: FC<{}> = (props) => {
                   timeout={1000}
                   classNames="message"
                 >
-                  <div className="message-item">{item.content}</div>
+                  <MessageItem onClose={remove} {...item}></MessageItem>
                 </CSSTransition>
               );
             })}
@@ -62,4 +103,4 @@ export const MessageProvider: FC<{}> = (props) => {
   }, []);
 
   return createPortal(messageWrapper, el);
-};
+});
