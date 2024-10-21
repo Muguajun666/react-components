@@ -5,15 +5,41 @@ interface MaskProps {
   element: HTMLElement;
   container?: HTMLElement;
   renderMaskContent?: (wrapper: React.ReactNode) => React.ReactNode;
+  onAnimationStart?: () => void;
+  onAnimationEnd?: () => void;
 }
 
 export const Mask: FC<MaskProps> = (props) => {
-  const { element, container, renderMaskContent } = props;
+  const { element, container, renderMaskContent, onAnimationStart, onAnimationEnd } = props;
 
   const [style, setStyle] = useState<CSSProperties>({});
 
   useEffect(() => {
-    if (!element) return;
+    onAnimationStart?.();
+    const timer = setTimeout(() => {
+      onAnimationEnd?.();
+    }, 200)
+    return () => {
+      clearTimeout(timer);
+    }
+  }, [element])
+
+  useEffect(() => {
+    const observer = new ResizeObserver(() => {
+      const style = getMaskStyle(
+        element,
+        container || document.documentElement
+      );
+
+      setStyle(style);
+    });
+    observer.observe(container || document.documentElement);
+  }, []);
+
+  useEffect(() => {
+    if (!element) {
+      return ;
+    }
 
     element.scrollIntoView({
       block: "center",
@@ -21,8 +47,6 @@ export const Mask: FC<MaskProps> = (props) => {
     });
 
     const style = getMaskStyle(element, container || document.documentElement);
-
-    console.log({ style });
 
     setStyle(style);
   }, [element, container]);
