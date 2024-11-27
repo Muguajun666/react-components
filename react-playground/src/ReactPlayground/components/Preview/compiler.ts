@@ -20,7 +20,7 @@ export const babelTransform = (
   code: string,
   files: Files
 ) => {
-  let _code = beforeTransformCode(filename, code);
+  const _code = beforeTransformCode(filename, code);
   let result = "";
   try {
     result = transform(_code, {
