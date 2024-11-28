@@ -33,6 +33,7 @@ export const PlaygroundContext = createContext<PlaygroundContext>({
 const getFilesFromUrl = () => {
   let files: Files | undefined;
   try {
+    if (!window.location.hash.slice(1)) return files;
     const hash = uncompress(window.location.hash.slice(1));
     files = JSON.parse(hash);
   } catch (e) {
