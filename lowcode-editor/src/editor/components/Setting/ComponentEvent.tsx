@@ -1,6 +1,8 @@
-import { Collapse, CollapseProps, Input, Select } from "antd";
+import { Collapse, CollapseProps, Select } from "antd";
 import { useComponentConfigStore } from "../../stores/component-config";
 import { useComponentsStore } from "../../stores/components";
+import GoToLink from "./actions/GoToLink";
+import ShowMessage from "./actions/ShowMessage";
 
 export function ComponentEvent() {
   const { curComponentId, curComponent, updateComponentProps } =
@@ -14,17 +16,6 @@ export function ComponentEvent() {
 
     updateComponentProps(curComponentId, {
       [eventName]: { type: value },
-    });
-  };
-
-  const urlChange = (eventName: string, value: string) => {
-    if (!curComponentId) return;
-
-    updateComponentProps(curComponentId, {
-      [eventName]: {
-        ...curComponent?.props?.[eventName],
-        url: value,
-      },
     });
   };
 
@@ -49,19 +40,10 @@ export function ComponentEvent() {
             />
           </div>
           {curComponent?.props?.[event.name]?.type === "goToLink" && (
-            <div className="mt-[10px]">
-              <div className="flex items-center gap-[10px]">
-                <div>链接</div>
-                <div>
-                  <Input
-                    onChange={(e) => {
-                      urlChange(event.name, e.target.value);
-                    }}
-                    value={curComponent?.props?.[event.name]?.url}
-                  />
-                </div>
-              </div>
-            </div>
+            <GoToLink event={event} />
+          )}
+          {curComponent?.props?.[event.name]?.type === "showMessage" && (
+            <ShowMessage event={event} />
           )}
         </div>
       ),
