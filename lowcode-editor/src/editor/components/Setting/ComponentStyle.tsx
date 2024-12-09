@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
+/* eslint-disable no-empty */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Form, Input, InputNumber, Select } from "antd";
 import { useComponentsStore } from "../../stores/components";
 import {
@@ -69,7 +72,7 @@ export function ComponentStyle() {
   const handleEditorChange = debounce((value) => {
     setCss(value);
 
-    let css: Record<string, any> = {};
+    const css: Record<string, any> = {};
 
     try {
       const cssStr = value
