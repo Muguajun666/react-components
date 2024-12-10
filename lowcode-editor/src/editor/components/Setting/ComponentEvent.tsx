@@ -4,8 +4,7 @@ import type { ComponentEvent } from "../../stores/component-config";
 import { useComponentsStore } from "../../stores/components";
 import { useState } from "react";
 import { ActionConfig, ActionModal } from "./ActionModal";
-import { DeleteOutlined } from "@ant-design/icons";
-import { divide } from "lodash-es";
+import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 
 export function ComponentEvent() {
   const { curComponentId, curComponent, updateComponentProps } =
@@ -14,6 +13,8 @@ export function ComponentEvent() {
 
   const [actionModalOpen, setActionModalOpen] = useState(false);
   const [curEvent, setCurEvent] = useState<ComponentEvent>();
+  const [curAction, setCurAction] = useState<ActionConfig>();
+  const [curActionIndex, setCurActionIndex] = useState<number>();
 
   if (!curComponentId) return null;
 
@@ -52,6 +53,17 @@ export function ComponentEvent() {
                         style={{
                           position: "absolute",
                           top: 10,
+                          right: 30,
+                          cursor: "pointer",
+                        }}
+                        onClick={() => editAction(item, index)}
+                      >
+                        <EditOutlined />
+                      </div>
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: 10,
                           right: 10,
                           cursor: "pointer",
                         }}
@@ -70,6 +82,17 @@ export function ComponentEvent() {
                         style={{
                           position: "absolute",
                           top: 10,
+                          right: 30,
+                          cursor: "pointer",
+                        }}
+                        onClick={() => editAction(item, index)}
+                      >
+                        <EditOutlined />
+                      </div>
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: 10,
                           right: 10,
                           cursor: "pointer",
                         }}
@@ -82,6 +105,17 @@ export function ComponentEvent() {
                   {item.type === "customJS" ? (
                     <div className="border border-[#aaa] m-[10px] p-[10px] relative">
                       <div className="text-[blue]">自定义 JS</div>
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: 10,
+                          right: 30,
+                          cursor: "pointer",
+                        }}
+                        onClick={() => editAction(item, index)}
+                      >
+                        <EditOutlined />
+                      </div>
                       <div
                         style={{
                           position: "absolute",
@@ -107,16 +141,38 @@ export function ComponentEvent() {
   const handleModalOk = (config?: ActionConfig) => {
     if (!config || !curEvent || !curComponent) return;
 
-    updateComponentProps(curComponentId, {
-      [curEvent.name]: {
-        actions: [
-          ...(curComponent.props[curEvent.name]?.actions || []),
-          config,
-        ],
-      },
-    });
+    if (curAction) {
+      updateComponentProps(curComponentId, {
+        [curEvent.name]: {
+          actions: curComponent.props[curEvent.name]?.actions.map(
+            (item: ActionConfig, index: number) => {
+              return index === curActionIndex ? config : item;
+            }
+          ),
+        },
+      });
+    } else {
+      updateComponentProps(curComponentId, {
+        [curEvent.name]: {
+          actions: [
+            ...(curComponent.props[curEvent.name]?.actions || []),
+            config,
+          ],
+        },
+      });
+    }
+
+    setCurAction(undefined);
 
     setActionModalOpen(false);
+  };
+
+  const editAction = (config: ActionConfig, index: number) => {
+    if (!curComponent) return;
+
+    setCurAction(config);
+    setCurActionIndex(index);
+    setActionModalOpen(true);
   };
 
   const deleteAction = (event: ComponentEvent, index: number) => {
@@ -144,7 +200,7 @@ export function ComponentEvent() {
       />
       <ActionModal
         visible={actionModalOpen}
-        eventConfig={curEvent!}
+        action={curAction}
         handleOk={handleModalOk}
         handleCancel={() => {
           setActionModalOpen(false);

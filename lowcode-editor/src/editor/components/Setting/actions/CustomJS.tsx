@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useComponentsStore } from "../../../stores/components";
 import MonacoEditor, { OnMount } from "@monaco-editor/react";
 
@@ -8,15 +8,20 @@ export interface CustomJSConfig {
 }
 
 export interface CustomJSProps {
+  value?: string;
   defaultValue?: string;
   onChange?: (config: CustomJSConfig) => void;
 }
 
-const customJS = (props: CustomJSProps) => {
-  const { defaultValue, onChange } = props;
+const CustomJS = (props: CustomJSProps) => {
+  const { value: val, defaultValue, onChange } = props;
 
   const { curComponentId } = useComponentsStore();
   const [value, setValue] = useState(defaultValue);
+
+  useEffect(() => {
+    setValue(val);
+  }, [val]);
 
   const codeChange = (value?: string) => {
     if (!curComponentId) return;
@@ -66,4 +71,4 @@ const customJS = (props: CustomJSProps) => {
   );
 };
 
-export default customJS;
+export default CustomJS;
