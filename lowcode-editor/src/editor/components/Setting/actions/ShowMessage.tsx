@@ -1,5 +1,4 @@
 import { Input, Select } from "antd";
-import { ComponentEvent } from "../../../stores/component-config";
 import { useComponentsStore } from "../../../stores/components";
 import { useState } from "react";
 

@@ -3,10 +3,9 @@ import { useComponentConfigStore } from "../../stores/component-config";
 import type { ComponentEvent } from "../../stores/component-config";
 import { useComponentsStore } from "../../stores/components";
 import { useState } from "react";
-import { ActionModal } from "./ActionModal";
-import { GoToLinkConfig } from "./actions/GoToLink";
-import { ShowMessageConfig } from "./actions/ShowMessage";
+import { ActionConfig, ActionModal } from "./ActionModal";
 import { DeleteOutlined } from "@ant-design/icons";
+import { divide } from "lodash-es";
 
 export function ComponentEvent() {
   const { curComponentId, curComponent, updateComponentProps } =
@@ -42,7 +41,7 @@ export function ComponentEvent() {
       children: (
         <div>
           {(curComponent?.props[event.name]?.actions || []).map(
-            (item: GoToLinkConfig | ShowMessageConfig, index: number) => {
+            (item: ActionConfig, index: number) => {
               return (
                 <div key={item.type + index}>
                   {item.type === "goToLink" ? (
@@ -80,6 +79,22 @@ export function ComponentEvent() {
                       </div>
                     </div>
                   ) : null}
+                  {item.type === "customJS" ? (
+                    <div className="border border-[#aaa] m-[10px] p-[10px] relative">
+                      <div className="text-[blue]">自定义 JS</div>
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: 10,
+                          right: 10,
+                          cursor: "pointer",
+                        }}
+                        onClick={() => deleteAction(event, index)}
+                      >
+                        <DeleteOutlined />
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               );
             }
@@ -89,7 +104,7 @@ export function ComponentEvent() {
     };
   });
 
-  const handleModalOk = (config?: GoToLinkConfig | ShowMessageConfig) => {
+  const handleModalOk = (config?: ActionConfig) => {
     if (!config || !curEvent || !curComponent) return;
 
     updateComponentProps(curComponentId, {
