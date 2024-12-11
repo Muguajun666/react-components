@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React from "react";
+import React, { useRef } from "react";
 import { useComponentConfigStore } from "../../stores/component-config";
 import { Component, useComponentsStore } from "../../stores/components";
 import { message } from "antd";
@@ -8,6 +8,8 @@ import { ActionConfig } from "../Setting/ActionModal";
 const Preview = () => {
   const { components } = useComponentsStore();
   const { componentConfig } = useComponentConfigStore();
+
+  const componentRefs = useRef<Record<string, any>>({});
 
   const handleEvent = (component: Component) => {
     const props: Record<string, any> = {};
@@ -35,6 +37,12 @@ const Preview = () => {
                   message.success(content);
                 },
               });
+            } else if (action.type === "componentMethod") {
+              const component =
+                componentRefs.current[action.config.componentId];
+              if (component) {
+                component[action.config.method]?.();
+              }
             }
           });
         };
@@ -56,6 +64,11 @@ const Preview = () => {
           id: component.id,
           name: component.name,
           styles: component.styles,
+          ref:
+            config.prod.$$typeof === Symbol.for("react.forward_ref")
+              ? (ref: Record<string, any>) =>
+                  (componentRefs.current[component.id] = ref)
+              : undefined,
           ...config.defaultProps,
           ...component.props,
           ...handleEvent(component),
