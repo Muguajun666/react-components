@@ -13,6 +13,7 @@ import TableProd from "../materials/Table/prod";
 import TableColumnDev from "../materials/TableColumn/dev";
 import TableColumnProd from "../materials/TableColumn/prod";
 import FormDev from "../materials/Form/dev";
+import FormProd from "../materials/Form/prod";
 import FormItemDev from "../materials/FormItem/dev";
 import FormItemProd from "../materials/FormItem/prod";
 export interface ComponentSetter {
@@ -208,8 +209,14 @@ export const useComponentConfigStore = create<State & Action>((set) => ({
           label: "提交事件",
         },
       ],
+      methods: [
+        {
+          name: "submit",
+          label: "提交",
+        },
+      ],
       dev: FormDev,
-      prod: FormDev,
+      prod: FormProd,
     },
     FormItem: {
       name: "FormItem",

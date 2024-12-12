@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CSSProperties } from "react";
-import { create } from "zustand";
+import { StateCreator, create } from "zustand";
+import { persist } from "zustand/middleware";
 
 export interface Component {
   id: number;
@@ -32,7 +33,7 @@ interface Action {
   setMode: (mode: State["mode"]) => void;
 }
 
-export const useComponentsStore = create<State & Action>((set, get) => ({
+const creator: StateCreator<State & Action> = (set, get) => ({
   components: [
     {
       id: 1,
@@ -131,7 +132,17 @@ export const useComponentsStore = create<State & Action>((set, get) => ({
       };
     });
   },
-}));
+});
+
+export const useComponentsStore = create<State & Action>()(
+  persist(creator, {
+    name: "components",
+    partialize: (state) => {
+      const { curComponentId, ...restState } = state;
+      return restState;
+    },
+  })
+);
 
 export function getComponentById(
   id: number | null,
